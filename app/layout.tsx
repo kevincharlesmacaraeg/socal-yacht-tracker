@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SoCal Yacht Tracker",
-  description: "Real-time super yacht tracker for Southern California",
+  title: "SoCal Tracker",
+  description: "Real-time yacht & private jet tracker for Southern California",
 };
 
 export default function RootLayout({
