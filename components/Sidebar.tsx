@@ -14,6 +14,7 @@ interface Props {
   yachtEvents: GeofenceEvent[]
   isAisLive: boolean
   onToggleAis: () => void
+  onResetMockYachts: () => void
   // jets
   aircraft: Aircraft[]
   selectedAircraft: Aircraft | null
@@ -23,6 +24,9 @@ interface Props {
   openSkyError: string | null
   openSkyUpdated: Date | null
   onToggleOpenSky: () => void
+  onRefreshOpenSky: () => void
+  isOpenSkyRefreshing: boolean
+  onCloseMobile?: () => void
 }
 
 const MODES: { value: TrackerMode; label: string; icon: string }[] = [
@@ -33,8 +37,9 @@ const MODES: { value: TrackerMode; label: string; icon: string }[] = [
 
 export default function Sidebar({
   mode, onSetMode,
-  yachts, selectedYacht, onSelectYacht, yachtEvents, isAisLive, onToggleAis,
-  aircraft, selectedAircraft, onSelectAircraft, jetEvents, isOpenSkyLive, openSkyError, openSkyUpdated, onToggleOpenSky,
+  yachts, selectedYacht, onSelectYacht, yachtEvents, isAisLive, onToggleAis, onResetMockYachts,
+  aircraft, selectedAircraft, onSelectAircraft, jetEvents, isOpenSkyLive, openSkyError, openSkyUpdated, onToggleOpenSky, onRefreshOpenSky, isOpenSkyRefreshing,
+  onCloseMobile,
 }: Props) {
   const showYachts = mode !== "jets"
   const showJets   = mode !== "yachts"
@@ -53,13 +58,24 @@ export default function Sidebar({
   ].sort((a, b) => b.ts.getTime() - a.ts.getTime()).slice(0, 12)
 
   return (
-    <div className="flex flex-col h-full bg-gray-950 text-white w-80 shrink-0 border-r border-white/10">
+    <div className="flex flex-col h-full bg-gray-950 text-white w-full md:w-80 shrink-0 border-r border-white/10">
 
       {/* Header */}
       <div className="px-4 py-4 border-b border-white/10">
-        <h1 className="text-lg font-bold tracking-tight">
-          {mode === "yachts" ? "SoCal Yacht Tracker" : mode === "jets" ? "SoCal Jet Tracker" : "SoCal Tracker"}
-        </h1>
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="text-lg font-bold tracking-tight">
+            {mode === "yachts" ? "SoCal Yacht Tracker" : mode === "jets" ? "SoCal Jet Tracker" : "SoCal Tracker"}
+          </h1>
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="md:hidden -mr-1 -mt-1 p-2 text-gray-500 hover:text-white text-lg leading-none"
+              aria-label="Close sidebar"
+            >
+              ✕
+            </button>
+          )}
+        </div>
         <p className="text-xs text-gray-400 mt-0.5">
           {mode === "yachts" ? "San Diego → Santa Barbara · Super Yachts (24m+)"
            : mode === "jets" ? "San Diego → Palm Springs · Private Jets"
@@ -114,13 +130,39 @@ export default function Sidebar({
 
         {/* Live status lines */}
         {isOpenSkyLive && showJets && (
-          <div className="mt-2">
-            {openSkyError
-              ? <p className="text-xs text-red-400">⚠ {openSkyError}</p>
-              : openSkyUpdated
-              ? <p className="text-xs text-gray-600">OpenSky updated {openSkyUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
-              : <p className="text-xs text-gray-600 animate-pulse">Fetching from OpenSky…</p>
-            }
+          <div className="mt-2 flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+              {openSkyError
+                ? <p className="text-xs text-red-400 truncate">⚠ {openSkyError}</p>
+                : openSkyUpdated
+                ? <p className="text-xs text-gray-600 truncate">OpenSky updated {openSkyUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+                : <p className="text-xs text-gray-600 animate-pulse">Fetching from OpenSky…</p>
+              }
+            </div>
+            <button
+              onClick={onRefreshOpenSky}
+              disabled={isOpenSkyRefreshing}
+              className="shrink-0 text-xs px-2 py-0.5 rounded border border-white/10 text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Force fetch now"
+            >
+              <span className={isOpenSkyRefreshing ? "inline-block animate-spin" : ""}>↻</span>
+              <span className="ml-1">Refresh</span>
+            </button>
+          </div>
+        )}
+
+        {/* Yacht mock-mode reset */}
+        {!isAisLive && showYachts && (
+          <div className="mt-2 flex items-center gap-2">
+            <p className="text-xs text-gray-600 truncate flex-1 min-w-0">Demo positions drifting…</p>
+            <button
+              onClick={onResetMockYachts}
+              className="shrink-0 text-xs px-2 py-0.5 rounded border border-white/10 text-gray-300 hover:bg-white/10 transition-colors"
+              title="Reset mock yacht positions"
+            >
+              <span>↻</span>
+              <span className="ml-1">Reset</span>
+            </button>
           </div>
         )}
       </div>

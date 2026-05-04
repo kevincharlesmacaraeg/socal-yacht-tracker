@@ -78,10 +78,15 @@ export async function fetchKnownJets(): Promise<Aircraft[]> {
   return results
 }
 
+export interface OpenSkyController {
+  stop: () => void
+  refresh: () => Promise<void>
+}
+
 export function startLiveTracking(
   onUpdate: (aircraft: Aircraft[]) => void,
   onError: (msg: string) => void
-): () => void {
+): OpenSkyController {
   let cancelled = false
 
   async function poll() {
@@ -97,8 +102,11 @@ export function startLiveTracking(
   poll()
   const timer = setInterval(poll, 15_000)  // OpenSky asks for ≥10s between requests
 
-  return () => {
-    cancelled = true
-    clearInterval(timer)
+  return {
+    stop: () => {
+      cancelled = true
+      clearInterval(timer)
+    },
+    refresh: poll,
   }
 }

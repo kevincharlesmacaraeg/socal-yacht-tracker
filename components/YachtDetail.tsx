@@ -15,7 +15,7 @@ const statusColors = {
 
 export default function YachtDetail({ yacht, onClose }: Props) {
   return (
-    <div className="absolute bottom-4 right-4 z-[1000] w-80 rounded-xl border border-white/10 bg-gray-950/95 backdrop-blur shadow-2xl text-white overflow-hidden">
+    <div className="absolute z-[1000] bottom-2 left-2 right-2 md:left-auto md:bottom-4 md:right-4 md:w-80 max-h-[70vh] overflow-y-auto rounded-xl border border-white/10 bg-gray-950/95 backdrop-blur shadow-2xl text-white">
       {/* Header */}
       <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-white/10">
         <div>
